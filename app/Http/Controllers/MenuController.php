@@ -2,7 +2,7 @@
 
 
 namespace App\Http\Controllers;
-
+use DB;
 use App\Models\MenuItem;
 use Illuminate\Routing\Controller as BaseController;
 
@@ -95,6 +95,30 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        // throw new \Exception('implement in coding task 3');
+        $menutItems = MenuItem::all()->toArray();
+
+        $menuItemHierarchy = json_encode($this->generateMenuHierarchy($menutItems));
+        
+        return response($menuItemHierarchy, 200);
     }
+
+    function generateMenuHierarchy(array $elements, $parentId = 0) {
+        $branch = array();
+    
+        foreach ($elements as $element) {
+            if ($element['parent_id'] == $parentId) {
+                $children = $this->generateMenuHierarchy($elements, $element['id']);
+                if ($children) {
+                    $element['children'] = $children;
+                }else{
+                    $element['children'] = [];
+                }
+                $branch[] = $element;
+            }
+        }
+    
+        return $branch;
+    }
+    
 }
